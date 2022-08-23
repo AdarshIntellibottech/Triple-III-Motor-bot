@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace III_ProjectOne.Class
 {
-    internal class Claim
+    internal class ClaimOldBasedOnDT
     {
         public static bool ProcessClaim(IWebDriver webDriver, Label label)
         {

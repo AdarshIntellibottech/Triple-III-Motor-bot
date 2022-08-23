@@ -57,7 +57,7 @@ namespace III_ProjectOne.Class
                               //  throw new Exception();
                             }
                             //result = Claim.ProcessClaim(browserInstace,label);
-                            result = ClaimProcess.ProcessClaim(browserInstace,label,checkBox);
+                            result = ClaimProcessMarine.ProcessClaim(browserInstace,label,checkBox);
 
                             break;
 

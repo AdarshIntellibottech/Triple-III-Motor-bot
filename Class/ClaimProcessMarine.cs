@@ -12,7 +12,7 @@ using System.Windows.Forms;
 using Excel = Microsoft.Office.Interop.Excel;
 namespace III_ProjectOne.Class
 {
-    internal class ClaimProcess
+    internal class ClaimProcessMarine
     {
         static string ClaimNumber = null;
         public static bool ProcessClaim(IWebDriver webDriver, Label label,CheckBox checkBox)
@@ -35,14 +35,16 @@ namespace III_ProjectOne.Class
                 
 
                 //Get Column index of PolicyNumber., Claim Number# and PolicyNumber#,Status and Comments.
-                int policyNumberDtIndex = GetColumnIndex(excelRange,excelSheet, GlobalVariable.mappingDict["PolicyNumberFilter"].ToString().Trim());
-                int policyNumberIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["PolicyNumber"].ToString().Trim()); 
-                int primaryClaimNumberIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["DefaultClaimNumber"].ToString().Trim()); 
-                int ClaimNumberIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["ClaimNumber"].ToString().Trim());
-                int statusIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["Status"].ToString().Trim());
-                int commentIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["Comments"].ToString().Trim());
-                int totalBaseAmtIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["BaseTotalOutStanding"].ToString().Trim());
-                int causeofLossIndex = GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["CauseofLoss"].ToString().Trim());
+                int policyNumberDtIndex = ClaimProcess.GetColumnIndex(excelRange,excelSheet, GlobalVariable.mappingDict["PolicyNumberFilter"].ToString().Trim());
+                int policyNumberIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["PolicyNumber"].ToString().Trim()); 
+                int primaryClaimNumberIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["DefaultClaimNumber"].ToString().Trim()); 
+                int ClaimNumberIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["ClaimNumber"].ToString().Trim());
+                int statusIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["Status"].ToString().Trim());
+                int commentIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["Comments"].ToString().Trim());
+                int totalBaseAmtIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["BaseTotalOutStanding"].ToString().Trim());
+                int causeofLossIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["CauseofLoss"].ToString().Trim());
+                int DRIIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["DRI"].ToString().Trim());
+                int eBaoClassIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["eBaoClass"].ToString().Trim());
                
 
                 string policyNumberDt = null;
@@ -51,6 +53,8 @@ namespace III_ProjectOne.Class
                 string defaultClaimNumber = null;
                 string totalBaseAmt = null;
                 string causeofLoss = null;
+                string DRI = null;
+                string eBaoClass = null;
 
                 for (int rCnt = 2; rCnt <= excelRange.Rows.Count; rCnt++)
                 {
@@ -121,9 +125,27 @@ namespace III_ProjectOne.Class
                                         excelWorkBook.Save();
                                         continue;
                                     }
-
+                                    string insType = null;
+                                    eBaoClass= Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, eBaoClassIndex]).Value2);
+                                    DRI= Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, DRIIndex]).Value2);
+                                    if (eBaoClass.ToString().Trim().ToLower() == "mmh")
+                                    {
+                                        if (policyNumberDt.Substring(0, 2) == "H0")
+                                        {
+                                            insType = "CoIns";
+                                        }
+                                        else
+                                        {
+                                            insType = "RI Inward";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        insType = DRI.ToString().Trim();
+                                    }
                                     Dictionary<string, string> outDict = new Dictionary<string, string>();
-                                    outDict = Navigation(tblFiltered, webDriver, policyNumber, totalBaseAmt,checkBox);
+
+                                    outDict = Navigation(tblFiltered, webDriver, policyNumber, totalBaseAmt,checkBox,insType,causeofLoss);
 
                                     //outDict["Result"] = "FAIL";
                                     //outDict["Comment"] = "Policy not found in eBAO system";
@@ -196,39 +218,9 @@ namespace III_ProjectOne.Class
 
        
 
-        public static int GetColumnIndex(Excel.Range excelRange, Excel._Worksheet excelSheet, string ColumnName)
-        {
+        
 
-            for (int rCnt = 1; rCnt <= excelRange.Columns.Count; rCnt++)
-            {
-
-
-                string CellVal = String.Empty;
-                try
-                {
-
-                    CellVal = ((Excel.Range)excelSheet.Cells[1, rCnt]).Value2.ToString();
-                    if (CellVal == ColumnName)
-                    {
-                        return rCnt;
-
-                    }
-                  
-
-                }
-                catch (Exception ex)
-                {
-                    LogMessage.Log("Error ClaimProcess->getColumnIndex :" + ex.Message);
-                    LogMessage.Log("Error ClaimProcess->getColumnIndex :" + ex.StackTrace);
-                    return 0;
-                }
-                
-            }
-            return 0;
-
-        }
-
-        public static Dictionary<string,string> Navigation(DataTable tblFiltered, IWebDriver webDriver,string policyNumber,string totalBaseAmt,CheckBox checkBox)
+        public static Dictionary<string,string> Navigation(DataTable tblFiltered, IWebDriver webDriver,string policyNumber,string totalBaseAmt,CheckBox checkBox,string insType,string causeOfLoss)
         {
             Dictionary<string, string> outDict = new Dictionary<string, string>();
             LogMessage.Log("Clicking on Search icon - PolicyNoSearchIcon");
@@ -280,16 +272,16 @@ namespace III_ProjectOne.Class
                 string policyType = policyNumber;
 
                 //extractng policy type from policy number
-                policyType = policyType.Substring(3, 3);
-                switch (policyType)
+                //policyType = policyType.Substring(3, 3);
+                switch (insType)
                 {
-                    case "FFR":
+                    case "CoIns":
                         //Selecting the Direct business
-                        LogMessage.Log("Seleting Direct business - PolicyDirectBusiness");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDirectBusiness"])).Click();
+                        LogMessage.Log("Seleting PolicyCoinsurance - PolicyCoinsurance");
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyCoinsurance"])).Click();
                         break;
 
-                    case "IAR":
+                    case "RI Inward":
                         //Selecting Reinsurance inward
                         LogMessage.Log("Seleting  Reinsurance inward - PolicyReInsuranceInwards");
                         webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyReInsuranceInwards"])).Click();
@@ -297,8 +289,8 @@ namespace III_ProjectOne.Class
 
                     default:
 
-                        LogMessage.Log("Unable to detect the business type, defaulting to Reinsurance inward - PolicyReInsuranceInwards");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyReInsuranceInwards"])).Click();
+                        LogMessage.Log("Unable to detect the business type, defaulting to Direct business");
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDirectBusiness"])).Click();
                         break;
                 }
 
@@ -506,7 +498,31 @@ namespace III_ProjectOne.Class
                 //Selecting Cause of loss 
                 LogMessage.Log("Selcting cause of loss CauseofLossDropdown");
                 GlobalVariable.errorStatus = false;
-                Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], tblFiltered.Rows[0][GlobalVariable.mappingDict["PoicyDamageClaimant"]].ToString().Trim());
+
+                causeOfLoss = causeOfLoss.Split('/')[0];
+                GlobalVariable.errorStatus = false;
+                l = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["CauseofLossDropdown"]));
+                //object of SelectElement
+                s = new SelectElement(l);
+                //Options method to get all options
+                els = s.Options;
+                //count options
+                e = els.Count;
+                for (int j = 0; j < e; j++)
+                {
+                    if ((els.ElementAt(j).Text).ToString().ToLower().Contains(causeOfLoss.Trim().ToLower()) )
+                    {
+                        Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], els.ElementAt(j).Text.ToString());
+                        
+                        break;
+                    }
+
+                   
+
+                }
+
+
+                //Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], causeOfLoss.ToString().Trim());
                 if (GlobalVariable.errorStatus)
                 {
                     Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], GlobalVariable.defaultValues["CauseofLossDropdown"].ToString().Trim());
@@ -573,7 +589,7 @@ namespace III_ProjectOne.Class
                 if (GlobalVariable.errorStatus)
                 {
                     GlobalVariable.errorStatus = false;
-                    LogMessage.Log("Unable to find the Subclaim owner, " + GlobalVariable.configDict["Username"].ToString().Trim());
+                    LogMessage.Log("Unable to find the Subclaim owner, " + GlobalVariable.configDict["Username"].ToString().Trim()+"Using the default one"+ GlobalVariable.defaultValues["DefaultUsernameForSuClaimOwner"].ToString());
                     Dropdown.Select(webDriver, GlobalVariable.navigationDict["subclaimClaimOwner"], GlobalVariable.defaultValues["DefaultUsernameForSuClaimOwner"].ToString().Trim());
                 }
 
@@ -615,18 +631,30 @@ namespace III_ProjectOne.Class
                 LogMessage.Log("Updating the out standing amount amount");
                 double totalAmt = 0;
                 string totalLoss = null;
+                string subrogationLoss = null;
+                bool lossFlag = false;
+                bool subrogationFlag = false;
                 foreach (DataRow row in tblFiltered.Rows)
                 {
                     totalAmt += Convert.ToDouble(row[GlobalVariable.mappingDict["TotalAmt"].ToString().Trim()]);
-                    if ((row[GlobalVariable.mappingDict["SettleType"]]).ToString().Trim().ToLower() == GlobalVariable.defaultValues["SettleType"].ToString().Trim().ToLower())
+                    if ((row[GlobalVariable.mappingDict["SettleType"]]).ToString().Trim().ToLower() == GlobalVariable.defaultValues["SettleTypeLoss"].ToString().Trim().ToLower())
                     {
                         totalLoss = row[GlobalVariable.mappingDict["TotalAmt"].ToString().Trim()].ToString().Trim();
+                        lossFlag = true;
+                    }
+                    if ((row[GlobalVariable.mappingDict["SettleType"]]).ToString().Trim().ToLower() == GlobalVariable.defaultValues["SettleTypeSubrogation"].ToString().Trim().ToLower())
+                    {
+                        subrogationLoss = row[GlobalVariable.mappingDict["TotalAmt"].ToString().Trim()].ToString().Trim();
+                        subrogationFlag = true;
                     }
                 }
                 if (totalBaseAmt == Convert.ToString(totalAmt))
                 {
                     LogMessage.Log("Updating the outstanding amounts");
-                   
+
+                    //If loss is found then update the loss amount
+                    if (lossFlag)
+                    {
                         LogMessage.Log("Clicking on ReserveLossUpdate");
                         Click.ButtonClick(webDriver, GlobalVariable.navigationDict["ReserveLossUpdate"], GlobalVariable.navigationDict["OutStandingAmt"]);
 
@@ -639,9 +667,37 @@ namespace III_ProjectOne.Class
 
                         LogMessage.Log("Clicking OutStandingPopUpBox");
                         Click.ButtonClick(webDriver, GlobalVariable.navigationDict["OutStandingPopUpBox"], GlobalVariable.navigationDict["OpenReserveLink"]);
+                        lossFlag = false;
+                    
+                    }
+                    //If subrogation found then update the amount - Settlement Tye: Recover from T.P.
+                    if (subrogationFlag)
+                    {
+                        LogMessage.Log("Clicking OpenReserveLink");
+                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["OpenReserveLink"], GlobalVariable.navigationDict["SubrogationRadiobox"]);
+                        Thread.Sleep(2000);
+                        LogMessage.Log("Clicking SubrogationRadiobox");
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogationRadiobox"])).Click();
 
-                     //lossExpenses+=Con
-                        if((Convert.ToString(totalAmt - Convert.ToDouble(totalLoss)))!= "0"){
+
+
+                        LogMessage.Log("Clicking Submit");
+                        //webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["LossExpenseSubmit"])).Click();
+                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["LossExpenseSubmit"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+
+                        LogMessage.Log("Click SubrogateUpdate");
+                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateUpdate"], GlobalVariable.navigationDict["SubrogationAmtUpdate"]);
+                        
+                        LogMessage.Log("Entering SubrogationAmtUpdate");
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogationAmtUpdate"])).SendKeys(subrogationLoss);
+
+                        LogMessage.Log("Clicking the SubrogateAmtSubmitbtn");
+                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateAmtSubmitbtn"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+
+
+                    }
+                    //lossExpenses+=Con
+                    if ((Convert.ToString(totalAmt - (Convert.ToDouble(totalLoss)+Convert.ToDouble(subrogationLoss))))!= "0"){
                         LogMessage.Log("Clicking OpenReserveLink");
                         Click.ButtonClick(webDriver, GlobalVariable.navigationDict["OpenReserveLink"], GlobalVariable.navigationDict["LossExpenseRadioBox"]);
                         Thread.Sleep(2000);
@@ -656,7 +712,7 @@ namespace III_ProjectOne.Class
 
                         LogMessage.Log("Click LossExpenseUpdateAmt");
                         Click.ButtonClick(webDriver, GlobalVariable.navigationDict["LossExpenseUpdateAmt"], GlobalVariable.navigationDict["LossExpenseOSReserve"]);
-                        totalLoss = Convert.ToString(totalAmt - Convert.ToDouble(totalLoss));
+                        totalLoss = Convert.ToString(totalAmt - (Convert.ToDouble(totalLoss) + Convert.ToDouble(subrogationLoss)));
                         LogMessage.Log("Entering loss  expense amount LossExpenseAmt");
                         webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["LossExpenseOSReserve"])).SendKeys(totalLoss);
 

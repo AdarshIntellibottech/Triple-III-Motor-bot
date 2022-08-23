@@ -280,11 +280,18 @@ namespace III_ProjectOne
                         GlobalVariable.dtClaimData = null;
                         LogMessage.Log("Reading claim data file.");
                         LabelText.UpdateText(Textlabel, "Readng Claim data file, this may take few minutes based on the no of rows...");
-                        GlobalVariable.dtClaimData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["ClaimDataInputFile"], GlobalVariable.configDict["Customer_AgentDataFileSheetName"], Textlabel);
+                        GlobalVariable.dtClaimData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["ClaimDataInputFile"], GlobalVariable.configDict["ClaimDataInputFileSheetName"], Textlabel);
+                        /*try
+                        {
+                            GlobalVariable.dtClaimData = GlobalVariable.dtClaimData.AsEnumerable()
+                               .Where(r => r.Field<string>(GlobalVariable.mappingDict["PolicyNumber"].ToString().Trim()).ToString().Trim() != "")
+                               .CopyToDataTable();
+                        }
+                       catch(Exception de)
+                        {
+                           LogMessage.Log("Error: " + de);
 
-                        GlobalVariable.dtClaimData = GlobalVariable.dtClaimData.AsEnumerable()
-                                .Where(r => r.Field<string>(GlobalVariable.mappingDict["PolicyNumber"].ToString().Trim()).ToString().Trim()!="")
-                                .CopyToDataTable();
+                        }*/
 
                         // Read Claim2 data
                         GlobalVariable.dtCustomerAgentData = null;
