@@ -42,6 +42,7 @@ namespace III_ProjectOne
             this.buttonBrowse = new System.Windows.Forms.Button();
             this.toolTipBrowse = new System.Windows.Forms.ToolTip(this.components);
             this.EMVcheckBox = new System.Windows.Forms.CheckBox();
+            this.endorsementButton = new System.Windows.Forms.RadioButton();
             this.SuspendLayout();
             // 
             // labelProgress
@@ -161,11 +162,24 @@ namespace III_ProjectOne
             this.EMVcheckBox.UseVisualStyleBackColor = true;
             this.EMVcheckBox.CheckedChanged += new System.EventHandler(this.EMVcheckBox_CheckedChanged);
             // 
+            // endorsementButton
+            // 
+            this.endorsementButton.AutoSize = true;
+            this.endorsementButton.Location = new System.Drawing.Point(293, 49);
+            this.endorsementButton.Name = "endorsementButton";
+            this.endorsementButton.Size = new System.Drawing.Size(131, 19);
+            this.endorsementButton.TabIndex = 11;
+            this.endorsementButton.TabStop = true;
+            this.endorsementButton.Text = "Check Endorsement";
+            this.endorsementButton.UseVisualStyleBackColor = true;
+            this.endorsementButton.CheckedChanged += new System.EventHandler(this.endorsementButton_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(585, 356);
+            this.Controls.Add(this.endorsementButton);
             this.Controls.Add(this.EMVcheckBox);
             this.Controls.Add(this.buttonBrowse);
             this.Controls.Add(this.textBoxFilePath);
@@ -199,6 +213,7 @@ namespace III_ProjectOne
         private System.Windows.Forms.Button buttonBrowse;
         private System.Windows.Forms.ToolTip toolTipBrowse;
         private System.Windows.Forms.CheckBox EMVcheckBox;
+        private System.Windows.Forms.RadioButton endorsementButton;
     }
 }
 

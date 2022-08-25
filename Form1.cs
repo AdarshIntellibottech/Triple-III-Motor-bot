@@ -152,6 +152,12 @@ namespace III_ProjectOne
                         case "Agent":
                             break;
 
+                        case "Check Endorsement":
+                            LogMessage.Log("Endorsement selected");
+                            Endorsement en = new Endorsement();
+                            en.start(textBoxFilePath.Text,Textlabel);
+                            break;
+
                         case "Customer":
                             LogMessage.Log("Selected Option Customer.");
                             //toolTipBrowse.SetToolTip = (this.buttonBrowse, "This tool tip is for test" + Environment.NewLine + "purpose");
@@ -414,16 +420,29 @@ namespace III_ProjectOne
 
         private void buttonBrowse_Click(object sender, EventArgs e)
         {
+            /*  //Select folder
+              FolderBrowserDialog folderDlg = new FolderBrowserDialog();
+              folderDlg.ShowNewFolderButton = true;
+              // Show the FolderBrowserDialog.  
+              DialogResult result = folderDlg.ShowDialog();
+              if (result == DialogResult.OK)
+              {
+                  textBoxFilePath.Text = folderDlg.SelectedPath;
+                  //Environment.SpecialFolder root = folderDlg.RootFolder;
+
+              }*/
+            //File dialog
+            OpenFileDialog openFileDialog = new OpenFileDialog();
             
-            FolderBrowserDialog folderDlg = new FolderBrowserDialog();
-            folderDlg.ShowNewFolderButton = true;
-            // Show the FolderBrowserDialog.  
-            DialogResult result = folderDlg.ShowDialog();
-            if (result == DialogResult.OK)
+            openFileDialog.Title = "Select input excel file";
+            openFileDialog.DefaultExt = "xlsx";
+            openFileDialog.Filter = "Excel files (*.xlsx)|*.xlsx";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                textBoxFilePath.Text = folderDlg.SelectedPath;
-                //Environment.SpecialFolder root = folderDlg.RootFolder;
+                textBoxFilePath.Text=openFileDialog.FileName;
             }
+            MessageBox.Show(textBoxFilePath.Text);
         }
 
         private void toolTip1_Popup(object sender, PopupEventArgs e)
@@ -433,6 +452,13 @@ namespace III_ProjectOne
 
         private void EMVcheckBox_CheckedChanged(object sender, EventArgs e)
         {
+
+        }
+
+        private void endorsementButton_CheckedChanged(object sender, EventArgs e)
+        {
+            textBoxFilePath.Enabled = true;
+            buttonBrowse.Enabled = true;
 
         }
     }

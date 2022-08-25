@@ -258,13 +258,13 @@ namespace III_ProjectOne.Class
                 //Filling date of loss
                 LogMessage.Log("Filling Date of loss field - PolicyDateOfLoss");
                 string tempVar = ConvertStringToDate.convertToDate(tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicyDateOfLoss"]].ToString().Trim());
-                tempVar = DateTime.Parse(tempVar).ToString("dd/MM/yyyy");
+                //tempVar = DateTime.Parse(tempVar).ToString("dd/MM/yyyy");
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDateOfLoss"])).SendKeys(tempVar);
 
                 //Filling Date of notification
                 LogMessage.Log("Filling date of notice field - PolicyDateOfNotification");
                 tempVar = ConvertStringToDate.convertToDate(tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicyDateOfNotification"]].ToString().Trim());
-                tempVar = DateTime.Parse(tempVar).ToString("dd/MM/yyyy");
+                //tempVar = DateTime.Parse(tempVar).ToString("dd/MM/yyyy");
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDateOfNotification"])).SendKeys(tempVar);
 
                 //Selecting the business type 
