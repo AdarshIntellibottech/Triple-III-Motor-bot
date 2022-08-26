@@ -31,6 +31,7 @@ namespace III_ProjectOne
         //Datatable to store customer and claim data
         public static DataTable dtClaimData = new DataTable();
         public static DataTable dtCustomerAgentData = new DataTable();
+        public static DataTable dtVesselData = new DataTable();
 
         //Creating summary table
         public static DataTable dtSummaryTable = new DataTable();

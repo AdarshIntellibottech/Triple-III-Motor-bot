@@ -37,6 +37,7 @@ namespace III_ProjectOne
                 File.AppendAllLines(GlobalVariable.logFileName, start);
                 radioButtonCustomer.Enabled = false;
                 radioButtonAgent.Enabled = false;
+                endorsementButton.Enabled = false;
                 radioButtonClaim.Checked = true;
                 textBoxFilePath.Enabled = false;
                 buttonBrowse.Enabled = false;
@@ -201,13 +202,13 @@ namespace III_ProjectOne
                                 Application.Exit();
                             }
                             ReadInputFile("Claim");
-                            if (GlobalVariable.dtClaimData.Rows.Count > 0 )
+                            if (GlobalVariable.dtVesselData.Rows.Count > 0)
                             {
                                 //Adding columns to the summary dt
-                                GlobalVariable.dtSummaryTable.Columns.Add("Policy Number");
+                               /* GlobalVariable.dtSummaryTable.Columns.Add("Policy Number");
                                 GlobalVariable.dtSummaryTable.Columns.Add("Claim Number");                               
                                 GlobalVariable.dtSummaryTable.Columns.Add("Status");
-                                GlobalVariable.dtSummaryTable.Columns.Add("Remarks");
+                                GlobalVariable.dtSummaryTable.Columns.Add("Remarks");*/
 
                                 ProcessData process = new ProcessData();
 
@@ -215,7 +216,7 @@ namespace III_ProjectOne
                             }
                             else
                             {
-                                LogMessage.Log("Rows count is 0 in  dtclaimsData ...");
+                                LogMessage.Log("Rows count is 0 in  Vessel info file ...");
                             }
 
                             break;
@@ -284,9 +285,9 @@ namespace III_ProjectOne
                     case "Claim":
                         // Read Claim data
                         GlobalVariable.dtClaimData = null;
-                        LogMessage.Log("Reading claim data file.");
-                        LabelText.UpdateText(Textlabel, "Readng Claim data file, this may take few minutes based on the no of rows...");
-                        GlobalVariable.dtClaimData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["ClaimDataInputFile"], GlobalVariable.configDict["ClaimDataInputFileSheetName"], Textlabel);
+                        //LogMessage.Log("Reading claim data file.");
+                        //LabelText.UpdateText(Textlabel, "Readng Claim data file, this may take few minutes based on the no of rows...");
+                        //GlobalVariable.dtClaimData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["ClaimDataInputFile"], GlobalVariable.configDict["ClaimDataInputFileSheetName"], Textlabel);
                         /*try
                         {
                             GlobalVariable.dtClaimData = GlobalVariable.dtClaimData.AsEnumerable()
@@ -305,7 +306,15 @@ namespace III_ProjectOne
                         LabelText.UpdateText(Textlabel, "Readng Claim data file, this may take few minutes based on the no of rows...");
                         GlobalVariable.dtCustomerAgentData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["ClaimDataInputFileTwo"], GlobalVariable.configDict["ClaimDataInputFileTwoSheetName"], Textlabel);
 
-                        
+                       if(GlobalVariable.configDict["ClaimType"].ToString().Trim()=="Marine")
+                        {
+                            GlobalVariable.dtVesselData = null;
+                            LogMessage.Log("Reading Vessel risk info file.");
+                            LabelText.UpdateText(Textlabel, "Readng Vessel risk info, this may take few minutes based on the no of rows...");
+                            GlobalVariable.dtVesselData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["VesselInfoFile"], GlobalVariable.configDict["VesselInfoFileSheetName"], Textlabel);
+                        }
+
+
 
 
                         break;

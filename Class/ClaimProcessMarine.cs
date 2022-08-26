@@ -97,6 +97,7 @@ namespace III_ProjectOne.Class
                                    
                                     LabelText.UpdateText(label, "Processing Claim for the policy number: " + policyNumber);
                                     DataTable tblFiltered = null;
+                                    DataTable tblVesselFiltered = null;
                                     try
                                     {
                                         LogMessage.Log("Filtering sheet 2 for policy number");
@@ -106,7 +107,14 @@ namespace III_ProjectOne.Class
                                                     r.Field<string>(GlobalVariable.mappingDict["DefaultClaimNumber"].ToString().Trim()) == defaultClaimNumber.ToString().Trim()
                                                     )
                                                     .CopyToDataTable();
-                                        
+
+                                        //filter the data in vessel data
+                                        tblVesselFiltered = GlobalVariable.dtVesselData.AsEnumerable()
+                                                    .Where(r => r.Field<string>(GlobalVariable.mappingDict["VesselPolicyNumber"].ToString().Trim()) == policyNumberDt.ToString().Trim() &&
+                                                    r.Field<string>(GlobalVariable.mappingDict["VesselClaimNumber"].ToString().Trim()) == defaultClaimNumber.ToString().Trim()
+                                                    )
+                                                    .CopyToDataTable();
+
 
 
 
@@ -114,14 +122,14 @@ namespace III_ProjectOne.Class
                                     }
                                     catch (Exception ex)
                                     {
-                                        LogMessage.Log("Error: Encountered issue while  searching for customer: " +policyNumberDt + " in pst file.");
+                                        LogMessage.Log("Error: Encountered issue while  searching for policy: " +policyNumberDt + " in settlement or vessel sheet.");
                                         LogMessage.Log("Error: " + ex.Message);
                                         LogMessage.Log("Error: " + ex.StackTrace);
                                         //filterFlag = true;
                                         //GlobalVariable.AddDataToSummaryTabe(name, type, "Unable to find data", "FAIL");
                                        
                                         excelSheet.Cells[rCnt, statusIndex] = "FAIL";
-                                        excelSheet.Cells[rCnt, commentIndex] = "Data not found in the settlement sheet";
+                                        excelSheet.Cells[rCnt, commentIndex] = "Data not found in the settlement sheet or vessel sheet";
                                         excelWorkBook.Save();
                                         continue;
                                     }
@@ -145,7 +153,7 @@ namespace III_ProjectOne.Class
                                     }
                                     Dictionary<string, string> outDict = new Dictionary<string, string>();
 
-                                    outDict = Navigation(tblFiltered, webDriver, policyNumber, totalBaseAmt,checkBox,insType,causeofLoss);
+                                    outDict = Navigation(tblFiltered, webDriver, policyNumber, totalBaseAmt,checkBox,insType,causeofLoss,tblVesselFiltered);
 
                                     //outDict["Result"] = "FAIL";
                                     //outDict["Comment"] = "Policy not found in eBAO system";
@@ -220,7 +228,7 @@ namespace III_ProjectOne.Class
 
         
 
-        public static Dictionary<string,string> Navigation(DataTable tblFiltered, IWebDriver webDriver,string policyNumber,string totalBaseAmt,CheckBox checkBox,string insType,string causeOfLoss)
+        public static Dictionary<string,string> Navigation(DataTable tblFiltered, IWebDriver webDriver,string policyNumber,string totalBaseAmt,CheckBox checkBox,string insType,string causeOfLoss, DataTable tblVesselFiltered)
         {
             Dictionary<string, string> outDict = new Dictionary<string, string>();
             LogMessage.Log("Clicking on Search icon - PolicyNoSearchIcon");
@@ -323,13 +331,23 @@ namespace III_ProjectOne.Class
 
                 }
 
+                
+
+
+
                 WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(90));
                 wait.Until(ExpectedConditions.ElementExists(By.XPath(GlobalVariable.navigationDict["PolicyContinue"])));
 
+                //Add to select vessel value
+
+                MessageBox.Show("Please select the Risk information for : " + tblVesselFiltered.Rows[0][GlobalVariable.mappingDict["VesselName"]].ToString().Trim() + ", then press OK.", "Prompt", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+
 
                 LogMessage.Log("Click on continue button");
-                Click.ButtonClick(webDriver, GlobalVariable.navigationDict["PolicyContinue"], GlobalVariable.navigationDict["PolicyAddDamageInfo"]);
+                Click.ButtonClick(webDriver, GlobalVariable.navigationDict["PolicyContinue"], GlobalVariable.navigationDict["PolicyAccidentDesc"]);
                 Thread.Sleep(3000);
+
+
 
                 //Fill Accident description
                 LogMessage.Log("Filling accident description. - PolicyAccidentDesc");
@@ -345,7 +363,7 @@ namespace III_ProjectOne.Class
 
                 //Drop down select
                 LogMessage.Log("Selecting Liabality as Damage type");
-                Dropdown.Select(webDriver, GlobalVariable.navigationDict["PolicyDamageType"], "Liability");
+                Dropdown.Select(webDriver, GlobalVariable.navigationDict["PolicyDamageType"], "Marine");
 
                 LogMessage.Log("Selecting Claimant");
                 IWebElement l = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PoicyDamageClaimant"]));
@@ -494,7 +512,7 @@ namespace III_ProjectOne.Class
                 //Filling Refnumber
                 LogMessage.Log("Filling reference Number: " + policyNo);
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ReferenceNo"])).SendKeys(policyNo);
-
+                bool causeOfLossFlag = false;
                 //Selecting Cause of loss 
                 LogMessage.Log("Selcting cause of loss CauseofLossDropdown");
                 GlobalVariable.errorStatus = false;
@@ -510,10 +528,11 @@ namespace III_ProjectOne.Class
                 e = els.Count;
                 for (int j = 0; j < e; j++)
                 {
-                    if ((els.ElementAt(j).Text).ToString().ToLower().Contains(causeOfLoss.Trim().ToLower()) )
+                    if ((els.ElementAt(j).Text).ToString().ToLower().Contains(causeOfLoss.Trim().ToLower()) || (causeOfLoss.Trim().ToLower().Contains((els.ElementAt(j).Text).ToString().ToLower())))
                     {
+                        LogMessage.Log("Selecting "+ (els.ElementAt(j).Text).ToString());
                         Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], els.ElementAt(j).Text.ToString());
-                        
+                        causeOfLossFlag = true;
                         break;
                     }
 
@@ -523,8 +542,9 @@ namespace III_ProjectOne.Class
 
 
                 //Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], causeOfLoss.ToString().Trim());
-                if (GlobalVariable.errorStatus)
+                if (GlobalVariable.errorStatus || causeOfLossFlag ==false)
                 {
+                    LogMessage.Log(causeOfLoss+" not found, selecting the default one :"+ GlobalVariable.defaultValues["CauseofLossDropdown"].ToString().Trim());
                     Dropdown.Select(webDriver, GlobalVariable.navigationDict["CauseofLossDropdown"], GlobalVariable.defaultValues["CauseofLossDropdown"].ToString().Trim());
                 }
                 //Selecting subclaim insured object
@@ -673,27 +693,54 @@ namespace III_ProjectOne.Class
                     //If subrogation found then update the amount - Settlement Tye: Recover from T.P.
                     if (subrogationFlag)
                     {
-                        LogMessage.Log("Clicking OpenReserveLink");
-                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["OpenReserveLink"], GlobalVariable.navigationDict["SubrogationRadiobox"]);
-                        Thread.Sleep(2000);
-                        LogMessage.Log("Clicking SubrogationRadiobox");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogationRadiobox"])).Click();
+
+                        if (subrogationLoss.Contains("-"))
+                        {
+                            LogMessage.Log("Clicking OpenReserveLink");
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["OpenReserveLink"], GlobalVariable.navigationDict["SubrogationRadiobox"]);
+                            Thread.Sleep(2000);
+                            LogMessage.Log("Clicking SubrogationRadiobox");
+                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogationRadiobox"])).Click();
 
 
 
-                        LogMessage.Log("Clicking Submit");
-                        //webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["LossExpenseSubmit"])).Click();
-                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["LossExpenseSubmit"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+                            LogMessage.Log("Clicking Submit");
+                            //webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["LossExpenseSubmit"])).Click();
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["LossExpenseSubmit"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
 
-                        LogMessage.Log("Click SubrogateUpdate");
-                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateUpdate"], GlobalVariable.navigationDict["SubrogationAmtUpdate"]);
-                        
-                        LogMessage.Log("Entering SubrogationAmtUpdate");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogationAmtUpdate"])).SendKeys(subrogationLoss);
+                            LogMessage.Log("Click SubrogateUpdate");
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateUpdate"], GlobalVariable.navigationDict["SubrogationAmtUpdate"]);
 
-                        LogMessage.Log("Clicking the SubrogateAmtSubmitbtn");
-                        Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateAmtSubmitbtn"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+                            LogMessage.Log("Entering SubrogationAmtUpdate");
+                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogationAmtUpdate"])).SendKeys(subrogationLoss);
 
+                            LogMessage.Log("Clicking the SubrogateAmtSubmitbtn");
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateAmtSubmitbtn"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+
+                        }
+                        else
+                        {
+                            LogMessage.Log("Clicking OpenReserveLink");
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["OpenReserveLink"], GlobalVariable.navigationDict["SubrogateLossRadioBox"]);
+                            Thread.Sleep(2000);
+                            LogMessage.Log("Clicking SubrogateLossRadioBox");
+                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogateLossRadioBox"])).Click();
+
+                            LogMessage.Log("Clicking SubrogateLossSubmit");
+                            //webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["LossExpenseSubmit"])).Click();
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateLossSubmit"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+
+                            LogMessage.Log("Click SubrogateLossUpdate");
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateLossUpdate"], GlobalVariable.navigationDict["SubrogateLossAmtUpdate"]);
+
+                            LogMessage.Log("Entering SubrogateLossAmtUpdate");
+                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SubrogateLossAmtUpdate"])).SendKeys(subrogationLoss);
+
+                            LogMessage.Log("Clicking the SubrogateLossAmtSubmit");
+                            Click.ButtonClick(webDriver, GlobalVariable.navigationDict["SubrogateLossAmtSubmit"], GlobalVariable.navigationDict["ClaimOptionLOS"]);
+
+
+                        }
 
                     }
                     //lossExpenses+=Con
