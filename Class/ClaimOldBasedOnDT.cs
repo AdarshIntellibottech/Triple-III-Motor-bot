@@ -25,7 +25,9 @@ namespace III_ProjectOne.Class
                 string currentWindow = webDriver.CurrentWindowHandle;
                 var currentWebDriver = webDriver;
                 //Click on new notice of loss
-                //webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["NewNoticeOfLoss"])).Click();
+                //webDriver.FindElement(By.X
+                //
+                //(GlobalVariable.navigationDict["NewNoticeOfLoss"])).Click();
 
                 if (GlobalVariable.dtClaimData.Rows.Count > 0)
                 {

@@ -16,7 +16,8 @@ namespace III_ProjectOne.Class
             try
             {
                 LogMessage.Log("Starting chromium browser.");
-                //ChromeDriverService service = ChromeDriverService.CreateDefaultService(GlobalVariable.configDict["Chromium driver path"]);
+                //ChromeDriverService service = ChromeDriverService.CreateDefaultService(GlobalVariable.configDict["Chromium driver
+                //"]);
                 ChromeDriverService service = ChromeDriverService.CreateDefaultService(Environment.CurrentDirectory);
                 service.HideCommandPromptWindow = true;
 

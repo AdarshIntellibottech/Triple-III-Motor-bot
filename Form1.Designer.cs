@@ -115,6 +115,7 @@ namespace III_ProjectOne
             this.radioButtonClaim.TabStop = true;
             this.radioButtonClaim.Text = "Claim";
             this.radioButtonClaim.UseVisualStyleBackColor = true;
+            this.radioButtonClaim.CheckedChanged += new System.EventHandler(this.radioButtonClaim_CheckedChanged);
             // 
             // buttonStop
             // 

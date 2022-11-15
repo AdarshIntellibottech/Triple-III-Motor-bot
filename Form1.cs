@@ -128,9 +128,9 @@ namespace III_ProjectOne
                     LabelText.UpdateText(Textlabel, "Reading config file");
                     LogMessage.Log("Reading config file...");
 
-                    string path = "C:\\III_ProjectOne\\Config.xlsx";
+                    string path = "C:\\III_ProjectOne\\Config_motor.xlsx";
                     dataTable = ProcessExceltoDt.ConvertToDT(path, "Sheet1", Textlabel);
-                    //Converting Datatable to DIctionary
+                    //Converting config excel file--> Datatable to DIctionary
                     GlobalVariable.errorStatus = false;
                     GlobalVariable.configDict = ConvertDtToDict.ConvertToDictionary(dataTable);
                     dataTable = null;
@@ -330,7 +330,8 @@ namespace III_ProjectOne
         private void ReadNavigationAndMapping(string type, Label label)
         {
             string path = Environment.CurrentDirectory + "\\RequiredFiles\\";
-            string fullPath = Path.Combine(path, type + "Navigation.xlsx");
+            string fullPath = Path.Combine(path, type + "NavigationMotor.xlsx");
+            //string fullPath = Path.Combine(path, type + "Navigation.xlsx");
             GlobalVariable.errorStatus = false;
             DataTable dataTable = new DataTable();
             LabelText.UpdateText(label, "Reading navigation file.");
@@ -355,7 +356,8 @@ namespace III_ProjectOne
             }
 
             //Mapping Files
-            fullPath = Path.Combine(path, type + "Mapping.xlsx");
+            //fullPath = Path.Combine(path, type + "Mapping.xlsx");
+            fullPath = Path.Combine(path, type + "MappingMotor.xlsx");
             LabelText.UpdateText(label, "Reading Mapping file.");
             dataTable = null;
             dataTable = ProcessExceltoDt.ConvertToDT(fullPath, "Mapping", label);
@@ -387,29 +389,29 @@ namespace III_ProjectOne
                 GlobalVariable.defaultValues = ConvertDtToDict.ConvertToDictionary(dataTable);
             GlobalVariable.errorStatus = false;
 
+            //default values is not required for motor insurance
 
 
 
-
-            //Country Mapping
-            LogMessage.Log("Reading Country mapping file.");
-            LabelText.UpdateText(Textlabel, "Readng Country mapping file.");
+            //Country Mapping not required as of now so commenting it now for motor insurance
+            //LogMessage.Log("Reading Country mapping file.");
+            //LabelText.UpdateText(Textlabel, "Readng Country mapping file.");
             //path = path+"CountryCodeMapping.xlsx";
-            fullPath = Path.Combine(path, "CountryCodeMapping.xlsx");
-            dataTable = null;
-            dataTable = ProcessExceltoDt.ConvertToDT(fullPath, "Sheet1", Textlabel);
-            GlobalVariable.countryDict = ConvertDtToDict.ConvertToDictionary(dataTable);
-            if (GlobalVariable.errorStatus)
-            {
-                LogMessage.Log("Error While creating the dictionary for CountryCodeMapping file");
-                MessageBox.Show("Error while processing Mapping file, Check log for more information.");
-                Application.Exit();
+            //fullPath = Path.Combine(path, "CountryCodeMapping.xlsx");
+            //dataTable = null;
+            //dataTable = ProcessExceltoDt.ConvertToDT(fullPath, "Sheet1", Textlabel);
+            //GlobalVariable.countryDict = ConvertDtToDict.ConvertToDictionary(dataTable);
+            //if (GlobalVariable.errorStatus)
+            //{
+            //    LogMessage.Log("Error While creating the dictionary for CountryCodeMapping file");
+            //    MessageBox.Show("Error while processing Mapping file, Check log for more information.");
+            //    Application.Exit();
 
-            }
-            //LoginNavigationValues
+            //}
+            //LoginNavigationValues is required to login into the portal
             GlobalVariable.errorStatus = false;
             dataTable = null;
-            fullPath= Path.Combine(path, "LoginNavigation.xlsx");
+            fullPath= Path.Combine(path, "LoginNavigationMotor.xlsx");
             dataTable = ProcessExceltoDt.ConvertToDT(fullPath, "Sheet1", Textlabel);
             GlobalVariable.LoginNavigation = ConvertDtToDict.ConvertToDictionary(dataTable);
 
@@ -468,6 +470,11 @@ namespace III_ProjectOne
         {
             textBoxFilePath.Enabled = true;
             buttonBrowse.Enabled = true;
+
+        }
+
+        private void radioButtonClaim_CheckedChanged(object sender, EventArgs e)
+        {
 
         }
     }

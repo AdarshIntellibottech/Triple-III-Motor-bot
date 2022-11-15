@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOne\\III_ProjectOne.csproj": {}
+    "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOneMotor\\III_ProjectOne.csproj": {}
   },
   "projects": {
-    "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOne\\III_ProjectOne.csproj": {
+    "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOneMotor\\III_ProjectOne.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOne\\III_ProjectOne.csproj",
+        "projectUniqueName": "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOneMotor\\III_ProjectOne.csproj",
         "projectName": "III_ProjectOne",
-        "projectPath": "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOne\\III_ProjectOne.csproj",
+        "projectPath": "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOneMotor\\III_ProjectOne.csproj",
         "packagesPath": "C:\\Users\\admin2\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOne\\obj\\",
+        "outputPath": "C:\\Users\\admin2\\Documents\\Visual Studio 2022\\Projects\\III_ProjectOneMotor\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
