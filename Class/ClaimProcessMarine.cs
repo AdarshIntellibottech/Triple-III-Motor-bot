@@ -43,8 +43,10 @@ namespace III_ProjectOne.Class
                 int commentIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["Comments"].ToString().Trim());
                 int totalBaseAmtIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["BaseTotalOutStanding"].ToString().Trim());
                 int causeofLossIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["CauseofLoss"].ToString().Trim());
-                int DRIIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["DRI"].ToString().Trim());
-                int eBaoClassIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["eBaoClass"].ToString().Trim());
+                //int DRIIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["DRI"].ToString().Trim());
+                int GadiNumberIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["GadiNumber"].ToString().Trim());
+                //eBaoClass is not required for motor related insurance
+                //int eBaoClassIndex = ClaimProcess.GetColumnIndex(excelRange, excelSheet, GlobalVariable.mappingDict["eBaoClass"].ToString().Trim());
                
 
                 string policyNumberDt = null;
@@ -53,8 +55,9 @@ namespace III_ProjectOne.Class
                 string defaultClaimNumber = null;
                 string totalBaseAmt = null;
                 string causeofLoss = null;
-                string DRI = null;
+                //string DRI = null;
                 string eBaoClass = null;
+                string gadiNumber = null;
 
                 for (int rCnt = 2; rCnt <= excelRange.Rows.Count; rCnt++)
                 {
@@ -80,13 +83,14 @@ namespace III_ProjectOne.Class
                                 if (policyNumberDt == null)
                                 {
                                     excelSheet.Cells[rCnt, statusIndex] = "FAIL";
-                                    excelSheet.Cells[rCnt, commentIndex] = "Policy number not found.";
+                                    excelSheet.Cells[rCnt, commentIndex] = "Old Policy number(col 3) not found.";
                                     LogMessage.Log("Policy number not found");
                                     continue;
                                 }
                                 else
                                 {
                                     string claimNo = null;
+                                    gadiNumber = Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, GadiNumberIndex]).Value2);
                                     totalBaseAmt = Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, totalBaseAmtIndex]).Value2);
                                     causeofLoss = Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, causeofLossIndex]).Value2);
                                     GlobalVariable.cancellationToken.ThrowIfCancellationRequested();
@@ -97,7 +101,7 @@ namespace III_ProjectOne.Class
                                    
                                     LabelText.UpdateText(label, "Processing Claim for the policy number: " + policyNumber);
                                     DataTable tblFiltered = null;
-                                    DataTable tblVesselFiltered = null;
+                                    //DataTable tblVesselFiltered = null;
                                     try
                                     {
                                         LogMessage.Log("Filtering sheet 2 for policy number");
@@ -109,11 +113,11 @@ namespace III_ProjectOne.Class
                                                     .CopyToDataTable();
 
                                         //filter the data in vessel data
-                                        tblVesselFiltered = GlobalVariable.dtVesselData.AsEnumerable()
-                                                    .Where(r => r.Field<string>(GlobalVariable.mappingDict["VesselPolicyNumber"].ToString().Trim()) == policyNumberDt.ToString().Trim() &&
-                                                    r.Field<string>(GlobalVariable.mappingDict["VesselClaimNumber"].ToString().Trim()) == defaultClaimNumber.ToString().Trim()
-                                                    )
-                                                    .CopyToDataTable();
+                                        //tblVesselFiltered = GlobalVariable.dtVesselData.AsEnumerable()
+                                        //            .Where(r => r.Field<string>(GlobalVariable.mappingDict["VesselPolicyNumber"].ToString().Trim()) == policyNumberDt.ToString().Trim() &&
+                                        //            r.Field<string>(GlobalVariable.mappingDict["VesselClaimNumber"].ToString().Trim()) == defaultClaimNumber.ToString().Trim()
+                                        //            )
+                                        //            .CopyToDataTable();
 
 
 
@@ -134,26 +138,27 @@ namespace III_ProjectOne.Class
                                         continue;
                                     }
                                     string insType = null;
-                                    eBaoClass= Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, eBaoClassIndex]).Value2);
-                                    DRI= Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, DRIIndex]).Value2);
-                                    if (eBaoClass.ToString().Trim().ToLower() == "mmh")
-                                    {
-                                        if (policyNumberDt.Substring(0, 2) == "H0")
-                                        {
-                                            insType = "CoIns";
-                                        }
-                                        else
-                                        {
-                                            insType = "RI Inward";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        insType = DRI.ToString().Trim();
-                                    }
+                                    //eBaoClass= Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, eBaoClassIndex]).Value2);
+                                    //DRI= Convert.ToString(((Excel.Range)excelSheet.Cells[rCnt, DRIIndex]).Value2);
+                                    //insType = DRI.ToString().Trim();
+                                    //if (eBaoClass.ToString().Trim().ToLower() == "mmh")
+                                    //{
+                                    //    if (policyNumberDt.Substring(0, 2) == "H0")
+                                    //    {
+                                    //        insType = "CoIns";
+                                    //    }
+                                    //    else
+                                    //    {
+                                    //        insType = "RI Inward";
+                                    //    }
+                                    //}
+                                    //else
+                                    //{
+                                    //insType = DRI.ToString().Trim();
+                                    //}
                                     Dictionary<string, string> outDict = new Dictionary<string, string>();
 
-                                    outDict = Navigation(tblFiltered, webDriver, policyNumber, totalBaseAmt,checkBox,insType,causeofLoss,tblVesselFiltered);
+                                    outDict = Navigation(tblFiltered, webDriver, policyNumber, totalBaseAmt,gadiNumber,checkBox,insType,causeofLoss);
 
                                     //outDict["Result"] = "FAIL";
                                     //outDict["Comment"] = "Policy not found in eBAO system";
@@ -228,7 +233,7 @@ namespace III_ProjectOne.Class
 
         
 
-        public static Dictionary<string,string> Navigation(DataTable tblFiltered, IWebDriver webDriver,string policyNumber,string totalBaseAmt,CheckBox checkBox,string insType,string causeOfLoss, DataTable tblVesselFiltered)
+        public static Dictionary<string,string> Navigation(DataTable tblFiltered, IWebDriver webDriver,string policyNumber,string totalBaseAmt,string gadiNumber,CheckBox checkBox,string insType,string causeOfLoss)
         {
             Dictionary<string, string> outDict = new Dictionary<string, string>();
             LogMessage.Log("Clicking on Search icon - PolicyNoSearchIcon");
@@ -265,7 +270,8 @@ namespace III_ProjectOne.Class
 
                 //Filling date of loss
                 LogMessage.Log("Filling Date of loss field - PolicyDateOfLoss");
-                string tempVar = ConvertStringToDate.convertToDate(tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicyDateOfLoss"]].ToString().Trim());
+                string tempVar = tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicyDateOfLoss"]].ToString().Trim();
+                //string tempVar = ConvertStringToDate.convertToDate(tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicyDateOfLoss"]].ToString().Trim());
                 //tempVar = DateTime.Parse(tempVar).ToString("dd/MM/yyyy");
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDateOfLoss"])).SendKeys(tempVar);
 
@@ -276,45 +282,14 @@ namespace III_ProjectOne.Class
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDateOfNotification"])).SendKeys(tempVar);
 
                 //Selecting the business type 
-                LogMessage.Log("Selecting the business type");
+                LogMessage.Log("Business type is direct business by default");
                 string policyType = policyNumber;
 
-                //extractng policy type from policy number
-                //policyType = policyType.Substring(3, 3);
-                switch (insType)
-                {
-                    case "CoIns":
-                        //Selecting the Direct business
-                        LogMessage.Log("Seleting PolicyCoinsurance - PolicyCoinsurance");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyCoinsurance"])).Click();
-                        break;
-
-                    case "RI Inward":
-                        //Selecting Reinsurance inward
-                        LogMessage.Log("Seleting  Reinsurance inward - PolicyReInsuranceInwards");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyReInsuranceInwards"])).Click();
-                        break;
-
-                    default:
-
-                        LogMessage.Log("Unable to detect the business type, defaulting to Direct business");
-                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDirectBusiness"])).Click();
-                        break;
-                }
 
                 //Selecting SIF/OIF
-                LogMessage.Log("Selecting the SIF/OIF"+ tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicySIF_OIF"]].ToString().Trim().ToLower());
+                LogMessage.Log("For all claims SIF is selected by default ");
                 LogMessage.Log("Policy No."+ tblFiltered.Rows[0]["Policy No."]+Environment.NewLine+"Claim Number "+ tblFiltered.Rows[0]["CLAIM NO."]);
-                if (tblFiltered.Rows[0][GlobalVariable.mappingDict["PolicySIF_OIF"]].ToString().Trim().ToLower() == "oif")
-                {
-                    LogMessage.Log("Selecting OIF - PolicyOIF");
-                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyOIF"])).Click();
-                }
-                else
-                {
-                    LogMessage.Log("Selecting SIF - PolicySIF");
-                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicySIF"])).Click();
-                }
+               
 
                 //webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDateOfNotification"])).SendKeys(row[GlobalVariable.mappingDict["PolicyDateOfNotification"]].ToString().Trim());
 
@@ -322,25 +297,82 @@ namespace III_ProjectOne.Class
                 LogMessage.Log("Click on retrieve button -PolicyRetrieve");
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyRetrieve"])).Click();
 
-                //Click.ButtonClick(webDriver, GlobalVariable.navigationDict["PolicyRetrieve"], GlobalVariable.navigationDict["PolicyContinue"]);
-
                 Thread.Sleep(9000);
                 if (webDriver.FindElements(By.XPath(GlobalVariable.navigationDict["ClaimExistsPopup"])).Count != 0)
                 {
-                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimExistsPopup"])).Click();
+                    //Enter the vehicle number in Risk Name field
+                    LogMessage.Log("Entering vehicle number to the risk name field");
+                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["EnterVehicleNumber"])).SendKeys(gadiNumber);
+                    //Search button
+                    LogMessage.Log("Click on search button");
+                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SearchVehicle"])).Click();
 
+                    string resultVehicletb = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["VehicleTable"])).Text;
+                    if (resultVehicletb.Contains(gadiNumber))
+                    {
+                        LogMessage.Log("Vehicle info is available clicking on check box");
+                        //click checkbox
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["VehicleCheckbox"])).Click();
+                        // click continue button
+                        LogMessage.Log("Click on continue button");
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ContinueButton"])).Click();
+
+                         LogMessage.Log("Updating the Accident description");
+                         webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["EnterAccidentDescription"])).SendKeys(causeOfLoss);
+
+                        LogMessage.Log("for loop to count the total outstanding amount");
+                        int totalOSAmount = 0;
+                       
+                        for(int i =0; i< tblFiltered.Rows.Count; i++)
+                        {
+                            string osAmountString = tblFiltered.Rows[i]["05-Total O/S"].ToString();
+                            totalOSAmount = totalOSAmount + (int)Convert.ToInt64(osAmountString);
+
+                        }
+                        int totalBaseAmtnum = (int)Convert.ToInt64(totalBaseAmt);
+                        if(totalBaseAmtnum == totalOSAmount)
+                        {
+                            for (int rwCount = 0; rwCount < tblFiltered.Rows.Count; rwCount++)
+                            {
+                                LogMessage.Log("Entering Damage information for the policy" + policyNumber);
+                                //string loss_description = tblFiltered.Rows[rwCount]["Loss_Description"].ToString();
+                                string outstandingAmount = tblFiltered.Rows[rwCount]["05-Total O/S"].ToString();
+                                //int outstandingAmountInt = (int)Convert.ToInt64(outstandingAmount);
+                                //if (outstandingAmountInt != null || outstandingAmountInt > 0)
+                                //{
+
+                                //}
+
+
+
+                            }
+                        }
+
+                       
+
+                    }
+                    else
+                    {
+                         outDict["Result"] = "FAIL";
+                         outDict["Comment"] = "Vehicle info was not found in eboa portal";
+                    }
+
+                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimExistsPopup"])).Click();
+
+             }
+              else
+                {
+                    outDict["Result"] = "FAIL";
+                    outDict["Comment"] = "Policy number doesn't exist in ebao portal ";
                 }
 
                 
-
-
-
                 WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(90));
                 wait.Until(ExpectedConditions.ElementExists(By.XPath(GlobalVariable.navigationDict["PolicyContinue"])));
 
                 //Add to select vessel value
 
-                MessageBox.Show("Please select the Risk information for : " + tblVesselFiltered.Rows[0][GlobalVariable.mappingDict["VesselName"]].ToString().Trim() + ", then press OK.", "Prompt", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+                //MessageBox.Show("Please select the Risk information for : " + tblVesselFiltered.Rows[0][GlobalVariable.mappingDict["VesselName"]].ToString().Trim() + ", then press OK.", "Prompt", MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 
 
                 LogMessage.Log("Click on continue button");

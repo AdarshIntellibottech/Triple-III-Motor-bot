@@ -202,7 +202,7 @@ namespace III_ProjectOne
                                 Application.Exit();
                             }
                             ReadInputFile("Claim");
-                            if (GlobalVariable.dtVesselData.Rows.Count > 0)
+                            if (GlobalVariable.dtCustomerAgentData.Rows.Count > 0)
                             {
                                 //Adding columns to the summary dt
                                /* GlobalVariable.dtSummaryTable.Columns.Add("Policy Number");
@@ -216,7 +216,7 @@ namespace III_ProjectOne
                             }
                             else
                             {
-                                LogMessage.Log("Rows count is 0 in  Vessel info file ...");
+                                LogMessage.Log("Rows count is 0 in check tool input settlement sheetfile ...");
                             }
 
                             break;
@@ -302,17 +302,17 @@ namespace III_ProjectOne
 
                         // Read Claim2 data
                         GlobalVariable.dtCustomerAgentData = null;
-                        LogMessage.Log("Reading 2nd Claim data file.");
+                        LogMessage.Log("Reading Settlement sheet from tool input file data file.");
                         LabelText.UpdateText(Textlabel, "Readng Claim data file, this may take few minutes based on the no of rows...");
                         GlobalVariable.dtCustomerAgentData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["ClaimDataInputFileTwo"], GlobalVariable.configDict["ClaimDataInputFileTwoSheetName"], Textlabel);
-
-                       if(GlobalVariable.configDict["ClaimType"].ToString().Trim()=="Marine")
-                        {
-                            GlobalVariable.dtVesselData = null;
-                            LogMessage.Log("Reading Vessel risk info file.");
-                            LabelText.UpdateText(Textlabel, "Readng Vessel risk info, this may take few minutes based on the no of rows...");
-                            GlobalVariable.dtVesselData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["VesselInfoFile"], GlobalVariable.configDict["VesselInfoFileSheetName"], Textlabel);
-                        }
+                        //settlement sheet data is being stored in dtCustomerAgentData (tool input sheet settlement sheet)
+                       //if(GlobalVariable.configDict["ClaimType"].ToString().Trim()=="Marine")
+                       // {
+                       //     GlobalVariable.dtVesselData = null;
+                       //     LogMessage.Log("Reading Vessel risk info file.");
+                       //     LabelText.UpdateText(Textlabel, "Readng Vessel risk info, this may take few minutes based on the no of rows...");
+                       //     GlobalVariable.dtVesselData = ProcessExceltoDt.ConvertToDT(GlobalVariable.configDict["VesselInfoFile"], GlobalVariable.configDict["VesselInfoFileSheetName"], Textlabel);
+                       // }
 
 
 

@@ -13,7 +13,7 @@ namespace III_ProjectOne.Class
             try
             {
                 LabelText.UpdateText(label, "Starting chromium browser.");
-
+                //browser instance stores the chromium data
                 var browserInstace = startChromiumBrowser.Start();
                 if (browserInstace != null)
                 {
