@@ -254,6 +254,7 @@ namespace III_ProjectOne.Class
             if (resultText.Contains(policyNumber))
             {
                 //Select the first policy from search
+                //clicking the radio button step
                 LogMessage.Log("Seleting first poicy from the search - PolicyNoRadioButton");
                 webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyNoRadioButton"])).Click();
 
@@ -337,15 +338,82 @@ namespace III_ProjectOne.Class
                                 LogMessage.Log("Entering Damage information for the policy" + policyNumber);
                                 //string loss_description = tblFiltered.Rows[rwCount]["Loss_Description"].ToString();
                                 string outstandingAmount = tblFiltered.Rows[rwCount]["05-Total O/S"].ToString();
-                                //int outstandingAmountInt = (int)Convert.ToInt64(outstandingAmount);
-                                //if (outstandingAmountInt != null || outstandingAmountInt > 0)
-                                //{
+                                int outstandingAmountInt = (int)Convert.ToInt64(outstandingAmount);
+                                if (outstandingAmountInt != null || outstandingAmountInt > 0)
+                                {
+                                    LogMessage.Log("Cliking on plus icon to add damage info");
+                                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddDamageInfo"])).Click();
 
-                                //}
+                                    LogMessage.Log("Selecting first party or 3rd party based on claimant type");
+                                    switch (tblFiltered.Rows[rwCount]["Claimant Type"]) 
+                                    {
+                                        case "TPI":
+                                            LogMessage.Log("Claimant type is 3rd party bodily injury as per given input sheet");
+                                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDamageThirdPartyParty"])).Click();
+                                            break;
+
+                                        case "TPD":
+                                            LogMessage.Log("Claimant type is 3rd party property damage as per given input sheet");
+                                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDamageThirdPartyParty"])).Click();
+                                            break;
+
+                                        case "OD":
+                                            LogMessage.Log("Claimant type is first party own damage as per given input sheet");
+                                            webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDamageFirstParty"])).Click();
+                                            break;
+
+                                        default:
+                                            LogMessage.Log("Unable to detect 1st party or 3rd party as input sheet is not provided properly");
+                                            outDict["Result"] = "FAIL";
+                                            outDict["Comment"] = "Unable to find out 1st party or second party based on input sheet";
+                                            break;
+                                    }
+
+                                    LogMessage.Log("Selecting Liabality as Damage type as vehicle by default");
+                                    Dropdown.Select(webDriver, GlobalVariable.navigationDict["PolicyDamageType"], "Vehicle");
+
+                                    
+                                    string vehicle_number = tblFiltered.Rows[rwCount]["Veh_No."].ToString();
+                                    string claimant_type = tblFiltered.Rows[rwCount]["Claimant Type"].ToString();
+                                    string damage_item = vehicle_number + "-" + claimant_type;
+                                    LogMessage.Log("Entering the Damage Item as "+ damage_item);
+                                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDamageItem"])).SendKeys(damage_item);
+                                    LogMessage.Log("Selecting new claimant");
+                                    Dropdown.Select(webDriver, GlobalVariable.navigationDict["PoicyDamageClaimant"], "*New Claimant");
+                               
+                                    LogMessage.Log("Entering claimant to the text field");
+                                    string ct_name = tblFiltered.Rows[rwCount]["Claimant"].ToString();
+                                    string claimant = ct_name.Substring(4);
+                                    LogMessage.Log("Entering the claimant name as given in the input sheet" + claimant);
+                                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyNewClaimantSearchName"])).SendKeys(claimant);
+
+                                    LogMessage.Log("Clicking search button");
+                                    webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDamageNewClaimantSearch"])).Click();
+
+                                    string resultClaimanttb = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimantTable"])).Text;
+                                    string resultClaimantName = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimantTableClaimantName"])).Text;
+                                    if(resultClaimanttb.Contains(resultClaimantName))
+                                    {
+                                        LogMessage.Log("Select the first claimant ");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimantSelectRadiobtn"])).Click();
+
+                                        LogMessage.Log("Clicking on add to claim party");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyAddToClaimParty"])).Click();
+
+                                        LogMessage.Log("Clicking on select as claimant");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicySelectAsClaimant"])).Click();
+                                    }
 
 
+
+                                }
 
                             }
+                        }
+                        else
+                        {
+                            outDict["Result"] = "FAIL";
+                            outDict["Comment"] = "Total outstanding amount in settlement and main sheet is not matching hence didn't proceed further";
                         }
 
                        
