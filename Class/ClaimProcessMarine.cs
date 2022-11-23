@@ -391,6 +391,30 @@ namespace III_ProjectOne.Class
                                     webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicyDamageNewClaimantSearch"])).Click();
 
                                     string resultClaimanttb = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimantTable"])).Text;
+                                    if(resultClaimanttb == "")
+                                    {
+                                        LogMessage.Log("Could not find the claimant in ebao system");
+                                        LogMessage.Log("Creating a new claimant");
+                                        LogMessage.Log("Not exist in common party");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["NotExistInCommonParty"])).Click();
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PartyName"])).SendKeys(claimant);
+                                        LogMessage.Log("adding contact info");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddContactInfo"])).Click();
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddContactInfoContactNumber"])).SendKeys("-");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddContactInfoContactEmail"])).SendKeys("-");
+
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddContactInfoSave"])).Click();
+
+                                        LogMessage.Log("Adding address info section");
+                                        Dropdown.Select(webDriver, GlobalVariable.navigationDict["AddressTypeDropdown"], "Other");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddressPostalCode"])).SendKeys(" -");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddressAdress1"])).SendKeys("-");
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["AddressSaveButton"])).Click();
+                                        webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["SelectASClaimant"])).Click();
+
+                                        LogMessage.Log("Done with creating a new claimant proceeding further");
+                                    }
+
                                     string resultClaimantName = webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["ClaimantTableClaimantName"])).Text;
                                     if(resultClaimanttb.Contains(resultClaimantName))
                                     {
@@ -403,6 +427,10 @@ namespace III_ProjectOne.Class
                                         LogMessage.Log("Clicking on select as claimant");
                                         webDriver.FindElement(By.XPath(GlobalVariable.navigationDict["PolicySelectAsClaimant"])).Click();
                                     }
+                                   
+                                    
+                                      
+                                    
 
 
 
